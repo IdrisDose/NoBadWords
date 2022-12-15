@@ -1,0 +1,16 @@
+[
+    {
+        "modid": "NoBadWords",
+        "name": "NoBadWords",
+        "description": "Stop the swear words because I can't help it",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "",
+        "updateUrl": "",
+        "authorList": [],
+        "credits": "",
+        "logoFile": "",
+        "screenshots": [],
+        "dependencies": []
+    }
+]
