@@ -15,7 +15,6 @@ import net.minecraftforge.fml.common.Mod;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.*;
 
 @Mod(
@@ -35,8 +34,7 @@ public class NoBadWords {
      */
     @Mod.Instance(MOD_ID)
     public static NoBadWords INSTANCE;
-    static Map<String, String[]> words = new HashMap<>();
-    static int largestWordLength = 0;
+    static ArrayList<String> badWords = new ArrayList<>();
     static Minecraft mc = Minecraft.getMinecraft();
 
     public static void loadConfigs() {
@@ -49,33 +47,11 @@ public class NoBadWords {
                     )
             );
 
-            String line = "";
-            int counter = 0;
+            String line;
             while((line = reader.readLine()) != null) {
-                counter++;
-                String[] content = null;
-                try {
-                    content = line.split(",");
-                    if(content.length == 0) {
-                        continue;
-                    }
-                    String word = content[0];
-                    String[] ignore_in_combination_with_words = new String[]{};
-                    if(content.length > 1) {
-                        ignore_in_combination_with_words = content[1].split("_");
-                    }
-
-                    if(word.length() > largestWordLength) {
-                        largestWordLength = word.length();
-                    }
-                    words.put(word.replaceAll(" ", ""), ignore_in_combination_with_words);
-
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-
+                badWords.add(line.trim());
             }
-            System.out.println("Loaded " + counter + " words to filter out");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,17 +60,15 @@ public class NoBadWords {
 
     /**
      * Iterates over a String input and checks whether a cuss word was found in a list, then checks if the word should be ignored (e.g. bass contains the word *ss).
-     * @param input
-     * @return
+     * @param input input string can be a word or sentence
+     * @return HashSet of bad words found
      */
-
-    public static ArrayList<String> badWordsFound(String input) {
+    public static HashSet<String> badWordsFound(String input) {
         if(input == null) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
 
         // don't forget to remove leetspeak, probably want to move this to its own function and use regex if you want to use this
-
         input = input.replaceAll("1","i");
         input = input.replaceAll("!","i");
         input = input.replaceAll("3","e");
@@ -107,46 +81,19 @@ public class NoBadWords {
         input = input.replaceAll("8", "ate");
         input = input.replaceAll("\\+", "t");
 
-        ArrayList<String> badWords = new ArrayList<>();
-        input = input.toLowerCase().replaceAll("[^a-zA-Z]", "");
+        HashSet<String> foundBadWords = new HashSet<>();
+        String[] splitString = input.split("\\s+");
 
-        String[] splited = input.split("\\s+");
-
-        for (String word : splited){
-            // iterate over each letter in the word
-            for(int start = 0; start < word.length(); start++) {
-                // from each letter, keep going to find bad words until either the end of the sentence is reached, or the max word length is reached.
-                for(int offset = 1; offset < (input.length()+1 - start) && offset < largestWordLength; offset++)  {
-                    String wordToCheck = input.substring(start, start + offset);
-                    if(words.containsKey(wordToCheck)) {
-                        // for example, if you want to say the word bass, that should be possible.
-                        String[] ignoreCheck = words.get(wordToCheck);
-                        boolean ignore = false;
-
-                        for(int s = 0; s < ignoreCheck.length; s++ ) {
-                            if(input.contains(ignoreCheck[s])) {
-                                ignore = true;
-                                break;
-                            }
-                        }
-
-                        if(!ignore) {
-                            badWords.add(wordToCheck);
-                        }
-                    }
+        for (String word : splitString){
+            word = word.trim().toLowerCase();
+            for (String badWord : badWords){
+                if(word.contains(badWord)){
+                    foundBadWords.add(badWord);
                 }
             }
         }
 
-
-
-
-
-        for(String s: badWords) {
-            System.out.println(s + " qualified as a bad word in a username");
-        }
-        return badWords;
-
+        return foundBadWords;
     }
 
     /**
@@ -180,16 +127,11 @@ public class NoBadWords {
         @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onChat(ClientChatEvent event) {
             String message = event.getMessage();
-            String[] msgWords = message.split("\\b");
-
             StringBuilder newMessage = new StringBuilder();
-            ArrayList<String> caughtWords = badWordsFound(message);
+            HashSet<String> caughtWords = badWordsFound(message);
             boolean caughtBadWord = (long) caughtWords.size() > 0;
-
             event.setCanceled(caughtBadWord);
-
             String s = caughtWords.toArray().length > 1 ? "§r, " : "";
-
             for (String word : caughtWords){
                 newMessage.append("§c").append(word).append(s);
             }
