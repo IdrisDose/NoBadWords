@@ -36,7 +36,7 @@ public class NoBadWords {
     public static NoBadWords INSTANCE;
     static ArrayList<String> badWords = new ArrayList<>();
     static Minecraft mc = Minecraft.getMinecraft();
-    static ArrayList<String> ignoredWords = new ArrayList<>();
+    private boolean wordCheckEnabled = true;
 
     public static void loadConfigs() {
         try {
@@ -135,12 +135,26 @@ public class NoBadWords {
     @Mod.EventHandler
     public void postinit(FMLPostInitializationEvent event) {
         System.out.println("No Bad Words Post Init");
+        INSTANCE = this;
     }
 
     public static class ChatEventClientOnlyEventHandler {
         @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onChat(ClientChatEvent event) {
             String message = event.getMessage();
+
+            if(isToggleCommand(message)){
+                INSTANCE.wordCheckEnabled = !INSTANCE.wordCheckEnabled;
+                Minecraft.getMinecraft().player.sendMessage(new TextComponentString(INSTANCE.wordCheckEnabled ? "NoBadWords Enabled" : "NoBadWords Disabled"));
+                event.setCanceled(true);
+                return;
+            }
+
+            if(!INSTANCE.wordCheckEnabled){
+                Minecraft.getMinecraft().player.sendMessage(new TextComponentString("§eWarning: NoBadWords is Disabled!"));
+                return;
+            }
+
             StringBuilder newMessage = new StringBuilder();
             HashSet<String> caughtWords = badWordsFound(message);
             boolean caughtBadWord = (long) caughtWords.size() > 0;
@@ -154,6 +168,11 @@ public class NoBadWords {
                 Minecraft.getMinecraft().player.sendMessage(new TextComponentString(newMessage.toString()));
                 Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
             }
+        }
+
+        private static boolean isToggleCommand(String message) {
+            String[] splitString = message.split("\\s+");
+            return splitString[0].toLowerCase().contains("nbwtoggle");
         }
     }
 }
