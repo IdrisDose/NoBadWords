@@ -26,7 +26,7 @@ public class NoBadWords {
 
     public static final String MOD_ID = "nobadwords";
     public static final String MOD_NAME = "nobadwords";
-    public static final String VERSION = "1.0-SNAPSHOT";
+    public static final String VERSION = "1.0.1";
 
 
     /**
@@ -36,6 +36,7 @@ public class NoBadWords {
     public static NoBadWords INSTANCE;
     static ArrayList<String> badWords = new ArrayList<>();
     static Minecraft mc = Minecraft.getMinecraft();
+    static ArrayList<String> ignoredWords = new ArrayList<>();
 
     public static void loadConfigs() {
         try {
@@ -47,9 +48,22 @@ public class NoBadWords {
                     )
             );
 
+            BufferedReader secondReader = new BufferedReader(
+                    new InputStreamReader(
+                            mc.getResourceManager().getResource(
+                                    new ResourceLocation("nobadwords", "ignoredwords.txt")
+                            ).getInputStream()
+                    )
+            );
+
             String line;
             while((line = reader.readLine()) != null) {
                 badWords.add(line.trim());
+            }
+
+            String secondLine;
+            while((line = secondReader.readLine()) != null) {
+                ignoredWords.add(line.trim());
             }
 
         } catch (IOException e) {
@@ -87,7 +101,7 @@ public class NoBadWords {
         for (String word : splitString){
             word = word.trim().toLowerCase();
             for (String badWord : badWords){
-                if(word.contains(badWord)){
+                if(word.contains(badWord) && !ignoredWords.contains(word)){
                     foundBadWords.add(badWord);
                 }
             }
@@ -138,6 +152,7 @@ public class NoBadWords {
             if (caughtBadWord){
                 Minecraft.getMinecraft().player.sendMessage(new TextComponentString("§cBAD WORDS, Your message contained:"));
                 Minecraft.getMinecraft().player.sendMessage(new TextComponentString(newMessage.toString()));
+                Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
             }
         }
     }
