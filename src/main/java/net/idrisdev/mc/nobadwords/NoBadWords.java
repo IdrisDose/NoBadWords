@@ -35,6 +35,8 @@ public class NoBadWords {
     @Mod.Instance(MOD_ID)
     public static NoBadWords INSTANCE;
     static ArrayList<String> badWords = new ArrayList<>();
+    static ArrayList<String> ignoredWords = new ArrayList<>();
+    static ArrayList<String> ignoredCommands = new ArrayList<>();
     static Minecraft mc = Minecraft.getMinecraft();
     private boolean wordCheckEnabled = true;
 
@@ -56,14 +58,25 @@ public class NoBadWords {
                     )
             );
 
+            BufferedReader thirdReader = new BufferedReader(
+                    new InputStreamReader(
+                            mc.getResourceManager().getResource(
+                                    new ResourceLocation("nobadwords", "ignoredcommands.txt")
+                            ).getInputStream()
+                    )
+            );
+
             String line;
             while((line = reader.readLine()) != null) {
                 badWords.add(line.trim());
             }
 
-            String secondLine;
             while((line = secondReader.readLine()) != null) {
                 ignoredWords.add(line.trim());
+            }
+
+            while((line = thirdReader.readLine()) != null) {
+                ignoredCommands.add(line.trim());
             }
 
         } catch (IOException e) {
@@ -97,6 +110,12 @@ public class NoBadWords {
 
         HashSet<String> foundBadWords = new HashSet<>();
         String[] splitString = input.split("\\s+");
+
+        for (String comm : ignoredCommands){
+            if (splitString[0].contains(comm)){
+                return new HashSet<>();
+            }
+        }
 
         for (String word : splitString){
             word = word.trim().toLowerCase();
