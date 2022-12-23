@@ -2,3 +2,5 @@ class
 classes
 glass
 glasses
+sniggers
+snigger
