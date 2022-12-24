@@ -157,6 +157,14 @@ public class NoBadWords {
         INSTANCE = this;
     }
 
+    private static void sendClientMessageWithPrefix(String message){
+        String prefix = "§f[§6NoBadWords§f]§r ";
+        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(prefix + message));
+    }
+    private static void sendClientMessage(String message){
+        Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+    }
+
     public static class ChatEventClientOnlyEventHandler {
         @SubscribeEvent(priority = EventPriority.HIGHEST)
         public static void onChat(ClientChatEvent event) {
@@ -164,13 +172,13 @@ public class NoBadWords {
 
             if(isToggleCommand(message)){
                 INSTANCE.wordCheckEnabled = !INSTANCE.wordCheckEnabled;
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentString(INSTANCE.wordCheckEnabled ? "NoBadWords Enabled" : "NoBadWords Disabled"));
+                sendClientMessageWithPrefix(INSTANCE.wordCheckEnabled ? "NoBadWords Enabled" : "NoBadWords Disabled");
                 event.setCanceled(true);
                 return;
             }
 
             if(!INSTANCE.wordCheckEnabled){
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentString("§eWarning: NoBadWords is Disabled!"));
+                sendClientMessageWithPrefix("§eWarning: NoBadWords is Disabled!");
                 return;
             }
 
@@ -183,9 +191,9 @@ public class NoBadWords {
                 newMessage.append("§c").append(word).append(s);
             }
             if (caughtBadWord){
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentString("§cBAD WORDS, Your message contained:"));
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentString(newMessage.toString()));
-                Minecraft.getMinecraft().player.sendMessage(new TextComponentString(message));
+                sendClientMessageWithPrefix("§cBAD WORDS, Your message contained:");
+                sendClientMessage(newMessage.toString());
+                sendClientMessage(message);
             }
         }
 
