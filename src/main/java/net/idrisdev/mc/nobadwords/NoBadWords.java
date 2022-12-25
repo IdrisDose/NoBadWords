@@ -73,6 +73,7 @@ public class NoBadWords {
 
             while((line = secondReader.readLine()) != null) {
                 ignoredWords.add(line.trim());
+                ignoredWords.add(line.trim()+"i");
             }
 
             while((line = thirdReader.readLine()) != null) {
@@ -118,9 +119,9 @@ public class NoBadWords {
         }
 
         for (String word : splitString){
-            word = word.trim().toLowerCase();
+            String parsedWord = word.replaceAll("[^a-zA-Z0-9]", "").trim().toLowerCase();
             for (String badWord : badWords){
-                if(word.contains(badWord) && !ignoredWords.contains(word)){
+                if(parsedWord.contains(badWord) && !ignoredWords.contains(parsedWord)){
                     foundBadWords.add(badWord);
                 }
             }
