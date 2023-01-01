@@ -1,1 +1,6 @@
 /pw-core
+/r
+/msg
+/gu
+/pc
+/p

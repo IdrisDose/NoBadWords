@@ -1,4 +1,5 @@
 classic
+classified
 class
 classes
 glass
@@ -6,3 +7,12 @@ glasses
 sniggers
 snigger
 massive
+compass
+entity
+competitive
+competition
+compete
+pass
+passed
+compassion
+compassionate
